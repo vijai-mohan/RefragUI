@@ -19,7 +19,8 @@ export default function App(){
     temperature: parseFloat(localStorage.getItem('cfg_temperature') || '0.7'),
     top_p: parseFloat(localStorage.getItem('cfg_top_p') || '0.9'),
     include_history: (localStorage.getItem('cfg_include_history') || 'true') === 'true',
-    do_sample: (localStorage.getItem('cfg_do_sample') || 'true') === 'true'
+    do_sample: (localStorage.getItem('cfg_do_sample') || 'true') === 'true',
+    api_base_url: localStorage.getItem('cfg_api_base_url') || API_BASE_URL
   }
 
   const [config, setConfig] = useState(defaultConfig)
@@ -66,7 +67,7 @@ export default function App(){
 
   // fetch available models
   useEffect(()=>{
-    axios.get(`${API_BASE_URL}/models`).then(r=>setModels(r.data.models)).catch(()=>setModels([]))
+    axios.get(`${getApiUrl()}/models`).then(r=>setModels(r.data.models)).catch(()=>setModels([]))
   },[])
 
   useEffect(()=>{
@@ -76,14 +77,18 @@ export default function App(){
     localStorage.setItem('cfg_top_p', String(config.top_p))
     localStorage.setItem('cfg_include_history', String(config.include_history))
     localStorage.setItem('cfg_do_sample', String(config.do_sample))
+    localStorage.setItem('cfg_api_base_url', String(config.api_base_url))
   }, [config])
+
+  // Helper to get current API base URL (uses config override if set)
+  const getApiUrl = () => config.api_base_url || API_BASE_URL
 
   // poll worker status periodically
   useEffect(()=>{
     let mounted = true
     const poll = async ()=>{
       try{
-        const r = await axios.get(`${API_BASE_URL}/workers`)
+        const r = await axios.get(`${getApiUrl()}/workers`)
         if(mounted) setWorkerStatus(r.data)
       }catch(e){ /* ignore */ }
     }
@@ -96,7 +101,7 @@ export default function App(){
   const cancelRequest = async (reqId)=>{
     if(!reqId) return false
     try{
-      await axios.post(`${API_BASE_URL}/cancel`, {req_id: reqId})
+      await axios.post(`${getApiUrl()}/cancel`, {req_id: reqId})
       return true
     }catch(e){
       console.error('cancel failed', e)
@@ -134,7 +139,7 @@ export default function App(){
     if(config) { body.do_sample = !!config.do_sample; }
 
     try{
-      const res = await fetch(`${API_BASE_URL}/chat`, {
+      const res = await fetch(`${getApiUrl()}/chat`, {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       })
       const reader = res.body.getReader()
@@ -445,7 +450,7 @@ export default function App(){
         <span>Refrag Demo</span>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
           <button className="gear" title="Configuration" onClick={()=>setShowConfig(s=>!s)}>⚙️</button>
-          <button title="Workers" onClick={()=>window.open(`${API_BASE_URL}/workers`,'_blank')}>🛠️</button>
+          <button title="Workers" onClick={()=>window.open(`${getApiUrl()}/workers`,'_blank')}>🛠️</button>
         </div>
       </header>
 
@@ -549,7 +554,7 @@ export default function App(){
 
         {/* Right compare panel - full height, fixed width */}
         <div style={{width:360, minWidth: 360, height:'100%', overflow:'hidden', padding: '12px', paddingLeft: 0}}>
-          <ComparePanel leftTurns={leftTurns} rightTurns={rightTurns} />
+          <ComparePanel leftTurns={leftTurns} rightTurns={rightTurns} apiUrl={getApiUrl()} />
         </div>
       </div>
 

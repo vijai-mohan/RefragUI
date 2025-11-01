@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import axios from 'axios'
-import { API_BASE_URL } from '../config.js'
 
-export default function ComparePanel({leftTurns=[], rightTurns=[]}){
+export default function ComparePanel({leftTurns=[], rightTurns=[], apiUrl}){
   const [metrics, setMetrics] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -20,7 +19,7 @@ export default function ComparePanel({leftTurns=[], rightTurns=[]}){
     if(!left || !right) { setMetrics(null); return }
 
     setLoading(true); setError(null)
-    axios.post(`${API_BASE_URL}/compare`, {left: left, right: right}).then(r=>{
+    axios.post(`${apiUrl}/compare`, {left: left, right: right}).then(r=>{
       setMetrics(r.data || null)
       setLoading(false)
     }).catch(e=>{

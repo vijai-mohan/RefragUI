@@ -10,12 +10,13 @@ React-based frontend for the Refrag model comparison demo. Compare multiple lang
 - 💾 **Chat history** - Save and load conversation sessions
 - 🎨 **Dynamic UI** - Color-coded panels per model
 - ⚙️ **Configurable parameters** - Adjust temperature, top_p, max tokens, and more
+- 🔧 **Custom backend URL** - Point to any backend (including localhost from production)
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+ (required by Vite 7)
 - npm or yarn
 
 ### Local Development
@@ -53,14 +54,70 @@ VITE_API_BASE_URL=http://localhost:7860
 
 See `.env.example` for reference.
 
+### Change the server at runtime (UI)
+
+You can point the UI to any server (including localhost) without rebuilding:
+
+- Click the ⚙️ gear icon (top-right)
+- In "Server Configuration", set "API Base URL" (e.g., `http://localhost:7860`)
+- Changes take effect immediately and persist in your browser
+
+Tip: This lets you debug the production UI against a local server.
+
 ### Backend Connection
 
 The UI expects a backend with these endpoints:
 
 - `GET /models` - List available models
-- `POST /chat-stream` - Streaming chat endpoint
+- `POST /chat` - Streaming chat endpoint (SSE-style chunked JSON lines with `data: ...\n\n`)
 - `POST /compare` - Compare model responses
-- `GET /metrics` - Performance metrics
+- `GET /workers` - Worker/health status page (optional but linked from UI)
+- `POST /cancel` - Cancel an in-flight request by `req_id`
+
+## Server requirements (to allow UI access)
+
+For the UI to reach your server (especially from GitHub Pages), ensure:
+
+- CORS enabled for your UI origin
+  - From GitHub Pages: `https://vijai-mohan.github.io`
+  - During local dev: `http://localhost:5173`
+- Supports chunked streaming for `/chat` (server-sent events style)
+  - Send lines prefixed with `data:` and separated by blank lines
+  - Example events the UI understands:
+    - `{ "event": "assigned", "payload": { "req_id": "..." } }`
+    - `{ "event": "request_received", "payload": { "request_received": <epoch_seconds> } }`
+    - `{ "event": "token", "payload": { "token": "...", "token_ts": <epoch_seconds>, "n_tokens": <int> } }`
+    - `{ "event": "done", "payload": {} }`
+- JSON APIs at listed endpoints, `Content-Type: application/json`
+- Optional: `/workers` HTML/JSON for the UI shortcut button
+
+Example CORS snippets:
+
+- FastAPI
+  
+  ```python
+  from fastapi.middleware.cors import CORSMiddleware
+  app.add_middleware(
+      CORSMiddleware,
+      allow_origins=[
+          "https://vijai-mohan.github.io",
+          "http://localhost:5173",
+      ],
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+  )
+  ```
+
+- Flask
+  
+  ```python
+  from flask_cors import CORS
+  CORS(app, origins=[
+      "https://vijai-mohan.github.io",
+      "http://localhost:5173",
+  ])
+  ```
 
 ## Deployment
 
@@ -92,7 +149,7 @@ npm run build
 # Deploy dist/ to your hosting provider
 ```
 
-**Note:** Update `base` in `vite.config.js` if deploying to a different path.
+If deploying under a subpath, update `base` in `vite.config.js`.
 
 ## Project Structure
 
@@ -178,110 +235,3 @@ npm install
 ## License
 
 See main Refrag project for license information.
-
-## Prerequisites
-
-- Node.js 18+ and npm
-
-## Setup
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-## Development
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:5173` (default Vite port).
-
-## Building for Production
-
-Build the production bundle:
-
-```bash
-npm run build
-```
-
-The built files will be in the `dist/` directory.
-
-## Preview Production Build
-
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-## Project Structure
-
-```
-client/
-├── src/
-│   ├── components/       # React components
-│   │   ├── AIResponse.jsx
-│   │   ├── ChatHistory.jsx
-│   │   ├── ComparePanel.jsx
-│   │   ├── Config.jsx
-│   │   ├── Panel.jsx
-│   │   ├── ResponseMetrics.jsx
-│   │   ├── SuggestedPrompts.jsx
-│   │   └── UserPrompt.jsx
-│   ├── utils/           # Utility functions
-│   │   └── colorUtils.js
-│   ├── App.jsx          # Main application component
-│   ├── main.jsx         # Application entry point
-│   └── styles.css       # Global styles
-├── index.html           # HTML template
-├── package.json         # Dependencies and scripts
-└── package-lock.json    # Locked dependency versions
-```
-
-## Features
-
-- **Side-by-side model comparison**: Compare responses from two different models
-- **Conversation history**: Save and reload previous conversations
-- **Suggested prompts**: Quick-start prompts for testing
-- **Real-time streaming**: See responses as they're generated
-- **Performance metrics**: View TTFT, TTL, and tokens/sec for each response
-- **Model-specific theming**: Visual distinction between different models
-
-## Configuration
-
-The frontend connects to the backend server at `http://localhost:7860` by default. 
-
-### Environment Variables
-
-For custom API endpoints, create a `.env.local` file:
-
-```bash
-VITE_API_BASE_URL=http://your-server:port
-```
-
-Or set the environment variable when building:
-
-```bash
-VITE_API_BASE_URL=https://api.your-domain.com npm run build
-```
-
-### Configuration Options
-
-The app automatically detects the environment:
-- **Development**: `npm run dev` - Uses localhost, enables debug logging
-- **Production**: `npm run build` - Uses env var or localhost, optimized build
-
-See `src/config.js` for all configuration options.
-
-## Tech Stack
-
-- **React 18.2**: UI framework
-- **Vite**: Build tool and dev server
-- **Axios**: HTTP client for API calls
-- **Fetch API**: Server-sent events for streaming responses
-

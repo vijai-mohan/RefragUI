@@ -7,6 +7,22 @@ export default function Config({config, setConfig}){
 
   return (
     <div style={{maxWidth:600}}>
+      <h3>Server Configuration</h3>
+      <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:16}}>
+        <label style={{width:160}}>API Base URL</label>
+        <input
+          type="text"
+          value={config.api_base_url}
+          onChange={(e)=>onChange('api_base_url', e.target.value)}
+          placeholder="http://localhost:7860"
+          style={{flex:1, padding:'4px 8px', fontSize:14}}
+          title="Backend server URL. Use localhost for debugging even from production."
+        />
+      </div>
+      <div style={{color:'#666',fontSize:12,marginBottom:16,marginLeft:168}}>
+        Set custom backend URL (e.g., http://localhost:7860 for local debugging)
+      </div>
+
       <h3>Generation Defaults</h3>
       <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
         <label style={{width:160}}>Max new tokens</label>
