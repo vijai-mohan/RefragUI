@@ -1,0 +1,32 @@
+*{box-sizing:border-box;font-family:Inter, Roboto, Arial, sans-serif}
+body,html,#root{height:100%;margin:0;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.banner{background:#0b1320;color:white;padding:10px 16px;font-weight:700;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.banner .gear{background:transparent;border:none;color:white;font-size:18px;cursor:pointer}
+.layout{flex:1;display:flex;gap:0;overflow:hidden;min-height:0}
+/* panels should stretch to fill available vertical space */
+.panel{flex:1;border:1px solid #e8e8e8;display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.panel-header{padding:8px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-area{flex:1;padding:8px;overflow:auto;background:#fafafa;min-height:0}
+.turn{padding:6px;margin:6px 0;border-radius:4px}
+.turn.user{background:#e6f7ff}
+.turn.assistant{background:#fff7e6}
+.metrics-row{display:flex;flex-direction:row;gap:16px;align-items:center;flex:1;min-height:28px;white-space:nowrap;overflow:hidden}
+.metrics-row > div{display:flex;align-items:center;gap:6px}
+.input-row{display:flex;gap:8px}
+.input-row textarea{flex:1;height:70px}
+.metrics{display:flex;flex-direction:column;gap:6px;margin-bottom:0;width:220px;min-width:160px;max-width:260px;overflow:auto;padding-right:6px}
+.metrics > div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.global-input{display:flex;gap:8px;padding:8px;border-top:1px solid #e8e8e8}
+.global-input textarea{flex:1;height:60px}
+.turn-metrics {font-size:10px;color:#111111;margin-top:4px;}
+.tm-label{font-weight: bold;}
+
+@media(max-width:1200px){
+  .layout{gap:0}
+}
+
+@media(max-width:900px){
+  .layout{flex-direction:column}
+}
