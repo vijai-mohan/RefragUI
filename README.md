@@ -1,18 +1,34 @@
-# Refrag Client
+# Refrag UI
 
-React-based frontend for the Refrag model comparison demo.
+React-based frontend for the Refrag model comparison demo. Compare multiple language models side-by-side with real-time streaming responses.
+
+## Features
+
+- 🔄 **Side-by-side model comparison** - Test two models simultaneously
+- 💬 **Real-time streaming** - See responses as they generate
+- 📊 **Performance metrics** - Track tokens/sec, latency, and total tokens
+- 💾 **Chat history** - Save and load conversation sessions
+- 🎨 **Dynamic UI** - Color-coded panels per model
+- ⚙️ **Configurable parameters** - Adjust temperature, top_p, max tokens, and more
 
 ## Quick Start
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
 
 ### Local Development
 
 ```bash
-cd client
+# Install dependencies
 npm install
+
+# Start dev server
 npm run dev
 ```
 
-Visit: http://localhost:5173
+Visit: **http://localhost:5173**
 
 ### Build for Production
 
@@ -20,96 +36,148 @@ Visit: http://localhost:5173
 npm run build
 ```
 
-Output will be in `dist/` directory.
+Production files will be in `dist/` directory.
 
-## Deployment to GitHub Pages
-
-### Prerequisites
-- GitHub repository with push access
-- Node.js 18+ installed locally
-
-### Setup Steps
-
-#### 1. Enable GitHub Pages (One-time)
-
-1. Go to your repository: **Settings** → **Pages**
-2. Under **Source**, select: **GitHub Actions**
-3. Click **Save**
-
-#### 2. Configure Backend URL (Optional)
-
-For production deployment with a backend:
-
-1. Go to: **Settings** → **Secrets and variables** → **Actions** → **Variables** tab
-2. Click **New repository variable**
-3. Add:
-   - **Name**: `VITE_API_BASE_URL`
-   - **Value**: Your backend API URL (e.g., `https://your-backend.hf.space`)
-
-**Note:** Defaults to `http://localhost:7860` if not set.
-
-#### 3. Deploy
-
-The client automatically deploys when you push changes to the `client/` directory:
-
-```bash
-git add client/
-git commit -m "Update client"
-git push origin main
-```
-
-Or trigger manually from **Actions** tab → **Deploy Client to GitHub Pages** → **Run workflow**
-
-#### 4. Access Your App
-
-After deployment (2-3 minutes), visit:
-```
-https://vijai-mohan.github.io/Refrag/UI/
-```
+## Configuration
 
 ### Environment Variables
 
-For local development with a custom backend:
+Create `.env.local` for local development:
 
 ```bash
-# Create .env.local
-echo VITE_API_BASE_URL=http://localhost:7860 > .env.local
-
-# Or set inline
-VITE_API_BASE_URL=http://your-backend:port npm run dev
+VITE_API_BASE_URL=http://localhost:7860
 ```
 
-### Troubleshooting Deployment
+**Available Variables:**
+- `VITE_API_BASE_URL` - Backend API endpoint (default: `http://localhost:7860`)
 
-**Build fails in GitHub Actions:**
-- Check **Actions** tab for error logs
-- Ensure `package-lock.json` is committed
-- Verify Node.js version compatibility
+See `.env.example` for reference.
 
-**Site shows 404:**
-- Confirm GitHub Pages is enabled with "GitHub Actions" source
-- Wait 2-3 minutes for first deployment
-- Check **Actions** tab for deployment status
+### Backend Connection
 
-**Assets not loading:**
-- Check browser console for 404s
-- Verify base path in `vite.config.js` is `/Refrag/UI/`
-- Clear browser cache (Ctrl+Shift+R)
+The UI expects a backend with these endpoints:
 
-**API calls fail (CORS):**
-- Verify `VITE_API_BASE_URL` is set in GitHub variables
-- Check backend CORS configuration allows `https://vijai-mohan.github.io`
-- Check browser console for specific error messages
+- `GET /models` - List available models
+- `POST /chat-stream` - Streaming chat endpoint
+- `POST /compare` - Compare model responses
+- `GET /metrics` - Performance metrics
 
-### Monitoring
+## Deployment
 
-- **GitHub Actions**: Check deployment status in Actions tab
-- **GitHub Pages**: View deployment logs in Settings → Pages
-- **Browser Console**: Press F12 to check for errors
+### GitHub Pages
+
+#### 1. Enable GitHub Pages
+- Go to **Settings** → **Pages**
+- Set **Source** to: **GitHub Actions**
+
+#### 2. Configure Backend (Optional)
+- Go to **Settings** → **Secrets and variables** → **Actions** → **Variables**
+- Add `VITE_API_BASE_URL` with your backend URL
+
+#### 3. Deploy
+```bash
+git push origin main
+```
+
+Deployment is automatic via GitHub Actions.
+
+**Deployed URL:** `https://vijai-mohan.github.io/RefragUI/`
+
+### Custom Deployment
+
+Build and deploy the `dist/` folder to any static hosting:
+
+```bash
+npm run build
+# Deploy dist/ to your hosting provider
+```
+
+**Note:** Update `base` in `vite.config.js` if deploying to a different path.
+
+## Project Structure
+
+```
+RefragUI/
+├── src/
+│   ├── components/       # React components
+│   │   ├── Panel.jsx            # Model panel container
+│   │   ├── ComparePanel.jsx     # Comparison view
+│   │   ├── ChatHistory.jsx      # Session management
+│   │   ├── Config.jsx           # Settings panel
+│   │   └── ...
+│   ├── utils/            # Utility functions
+│   │   └── colorUtils.js        # Color generation
+│   ├── App.jsx           # Main application
+│   ├── config.js         # Environment config
+│   ├── main.jsx          # Entry point
+│   └── styles.css        # Global styles
+├── .github/workflows/    # CI/CD
+├── index.html            # HTML template
+├── package.json          # Dependencies
+└── vite.config.js        # Build configuration
+```
 
 ## Development
 
-> 📖 **For developers**: See [DEV_GUIDE.md](./DEV_GUIDE.md) for detailed architecture, data flow, and implementation details.
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+### Code Style
+
+- ES6+ JavaScript
+- React functional components with hooks
+- Axios for HTTP requests
+- CSS for styling (no framework)
+
+## Troubleshooting
+
+### Build Errors
+
+**Module not found errors:**
+```bash
+# Clean reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Runtime Errors
+
+**API connection fails:**
+- Verify `VITE_API_BASE_URL` is set correctly
+- Check backend is running and accessible
+- Ensure backend has CORS enabled for your origin
+
+**Assets not loading after deployment:**
+- Verify `base` path in `vite.config.js` matches your deployment path
+- Check browser console for 404 errors
+- Clear browser cache
+
+### Development Issues
+
+**Hot reload not working:**
+- Check file is saved
+- Restart dev server: Ctrl+C then `npm run dev`
+
+**Port already in use:**
+- Change port in `vite.config.js` or kill process using port 5173
+
+## Documentation
+
+- **[DEV_GUIDE.md](./DEV_GUIDE.md)** - Detailed architecture and implementation guide
+- **[.env.example](./.env.example)** - Environment variables reference
+
+## Tech Stack
+
+- **React 18.2** - UI framework
+- **Vite 7.1** - Build tool
+- **Axios 1.13** - HTTP client
+
+## License
+
+See main Refrag project for license information.
 
 ## Prerequisites
 
